@@ -1,0 +1,21 @@
+# AI Knowledge Hub - Python Dependencies
+# All free / open-source
+
+# ── Streamlit (web UI + hosting) ──────────────────────────────────────────────
+streamlit>=1.35.0
+
+# ── Google Gemini AI (free tier via Google AI Studio) ────────────────────────
+google-generativeai>=0.7.0
+
+# ── YouTube transcript extraction (no API key needed) ────────────────────────
+youtube-transcript-api>=0.6.2
+
+# ── Document text extraction ──────────────────────────────────────────────────
+pymupdf>=1.24.0          # PDF extraction (fast, reliable)
+python-docx>=1.1.0       # Word documents (.docx)
+python-pptx>=0.6.23      # PowerPoint (.pptx)
+openpyxl>=3.1.0          # Excel (.xlsx)
+
+# ── Data & visualisation ──────────────────────────────────────────────────────
+pandas>=2.0.0
+plotly>=5.20.0
