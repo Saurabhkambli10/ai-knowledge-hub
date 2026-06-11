@@ -99,7 +99,10 @@ def delete_item(item_id: str):
     st.session_state.items = [i for i in st.session_state.items if i["id"] != item_id]
 
 def export_knowledge_base() -> str:
-    return json.dumps(st.session_state.items, indent=2, ensure_ascii=False)
+    try:
+        return json.dumps(st.session_state.items, indent=2, ensure_ascii=False, default=str)
+    except Exception:
+        return "[]"
 
 def import_knowledge_base(json_str: str):
     data = json.loads(json_str)
