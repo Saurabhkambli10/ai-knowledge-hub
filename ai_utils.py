@@ -115,7 +115,7 @@ def _parse_json(text: str) -> dict:
         raise ValueError(f"Could not parse JSON from response:\n{text[:500]}")
 
 
-def _truncate(text: str, max_chars: int = 120_000) -> str:
+def _truncate(text: str, max_chars: int = 60_000) -> str:
     """Truncate text to stay within Gemini's practical limit."""
     if len(text) <= max_chars:
         return text
