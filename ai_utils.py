@@ -1,6 +1,6 @@
 """
 Gemini AI integration for content analysis and comparison.
-Uses Google AI Studio free tier (gemini-1.5-flash).
+Uses Google AI Studio free tier (gemini-2.0-flash).
 """
 
 import json
@@ -98,7 +98,7 @@ Knowledge base items:
 
 def _init_model(api_key: str):
     genai.configure(api_key=api_key)
-    return genai.GenerativeModel("gemini-1.5-flash")
+    return genai.GenerativeModel("gemini-2.0-flash")
 
 
 def _parse_json(text: str) -> dict:
