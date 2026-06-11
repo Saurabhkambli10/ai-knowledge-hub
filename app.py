@@ -14,9 +14,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 
-from utils.ai_utils import analyze_content, compare_items, semantic_search
-from utils.youtube_utils import extract_video_id, get_transcript, get_video_metadata
-from utils.doc_utils import extract_text_from_file, get_file_icon
+from ai_utils import analyze_content, compare_items, semantic_search
+from youtube_utils import extract_video_id, get_transcript, get_video_metadata
+from doc_utils import extract_text_from_file, get_file_icon
 
 # ── Page config ───────────────────────────────────────────────────────────────
 
