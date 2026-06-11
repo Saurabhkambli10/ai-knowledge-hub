@@ -63,8 +63,8 @@ st.markdown("""
 # ── Session state initialisation ──────────────────────────────────────────────
 
 def init_state():
-    if "items" not in st.session_state:
-        st.session_state.items = []          # List of analyzed content items
+    if "kb_items" not in st.session_state:
+        st.session_state["kb_items"] = []          # List of analyzed content items
     if "api_key" not in st.session_state:
         # Check Streamlit secrets first, then fall back to empty
         try:
@@ -90,17 +90,17 @@ def render_tags(tags: list) -> str:
     return " ".join(f'<span class="tag-pill">{t}</span>' for t in tags)
 
 def get_item_by_id(item_id: str) -> dict | None:
-    for item in st.session_state.items:
+    for item in st.session_state["kb_items"]:
         if item["id"] == item_id:
             return item
     return None
 
 def delete_item(item_id: str):
-    st.session_state.items = [i for i in st.session_state.items if i["id"] != item_id]
+    st.session_state["kb_items"] = [i for i in st.session_state["kb_items"] if i["id"] != item_id]
 
 def export_knowledge_base() -> str:
     try:
-        return json.dumps(st.session_state.items, indent=2, ensure_ascii=False, default=str)
+        return json.dumps(st.session_state["kb_items"], indent=2, ensure_ascii=False, default=str)
     except Exception:
         return "[]"
 
@@ -108,10 +108,10 @@ def import_knowledge_base(json_str: str):
     data = json.loads(json_str)
     if isinstance(data, list):
         # Merge: avoid duplicates by ID
-        existing_ids = {i["id"] for i in st.session_state.items}
+        existing_ids = {i["id"] for i in st.session_state["kb_items"]}
         for item in data:
             if item.get("id") not in existing_ids:
-                st.session_state.items.append(item)
+                st.session_state["kb_items"].append(item)
         return len(data)
     raise ValueError("Invalid knowledge base format.")
 
@@ -155,7 +155,7 @@ with st.sidebar:
 
     # Knowledge base export/import
     with st.expander("💾 Save / Load Data"):
-        if st.session_state.items:
+        if st.session_state["kb_items"]:
             st.download_button(
                 "⬇️ Export Knowledge Base",
                 data=export_knowledge_base(),
@@ -173,7 +173,8 @@ with st.sidebar:
                 st.error(f"Import failed: {e}")
 
     st.divider()
-    st.caption(f"📚 {len(st.session_state.items)} items in knowledge base")
+    kb_count = len(st.session_state["kb_items"])
+    st.caption(f"📚 {kb_count} items in knowledge base")
 
 # ── API key guard ─────────────────────────────────────────────────────────────
 
@@ -194,7 +195,7 @@ def require_api_key():
 def page_dashboard():
     st.title("🏠 Dashboard")
 
-    items = st.session_state.items
+    items = st.session_state["kb_items"]
     if not items:
         st.info(
             "👋 **Welcome to AI Knowledge Hub!**\n\n"
@@ -343,7 +344,7 @@ def page_youtube():
             "analysis": analysis,
             "language": lang,
         }
-        st.session_state.items.append(item)
+        st.session_state["kb_items"].append(item)
         st.success(f"✅ Saved to Knowledge Base: **{analysis.get('title', 'Video')}**")
 
         _render_analysis(analysis, metadata)
@@ -473,7 +474,7 @@ def page_documents():
                 "raw_text": text[:5000],
                 "analysis": analysis,
             }
-            st.session_state.items.append(item)
+            st.session_state["kb_items"].append(item)
             st.success(f"✅ Saved to Knowledge Base: **{analysis.get('title', uploaded.name)}**")
 
             _render_analysis(analysis)
@@ -486,7 +487,7 @@ def page_documents():
 def page_knowledge_base():
     st.title("🗄️ Knowledge Base")
 
-    items = st.session_state.items
+    items = st.session_state["kb_items"]
     if not items:
         st.info("Your knowledge base is empty. Add videos or documents to get started.")
         return
@@ -601,7 +602,7 @@ def page_compare():
     st.title("⚖️ Compare & Analyse")
     require_api_key()
 
-    items = st.session_state.items
+    items = st.session_state["kb_items"]
     if len(items) < 2:
         st.info(
             "You need at least **2 items** in your knowledge base to compare. "
