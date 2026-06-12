@@ -301,6 +301,22 @@ def page_youtube():
         help="Supports youtube.com and youtu.be links"
     )
 
+    # Manual transcript fallback (needed on cloud hosting due to YouTube IP blocks)
+    with st.expander("📋 Paste transcript manually (use this if auto-fetch fails)"):
+        st.markdown(
+            "**How to get the transcript from YouTube:**\n"
+            "1. Open the video on YouTube\n"
+            "2. Click the **'...'** (three dots) below the video → **'Show transcript'**\n"
+            "3. Click the **three-dot menu** in the transcript panel → **'Toggle timestamps'** (turn off)\n"
+            "4. Select all text (`Ctrl+A` / `Cmd+A`) → Copy → Paste below"
+        )
+        manual_transcript = st.text_area(
+            "Paste transcript here",
+            height=180,
+            placeholder="Paste the YouTube transcript text here...",
+            key="manual_transcript"
+        )
+
     analyze_btn = st.button("🚀 Analyse Video", type="primary", disabled=not url.strip())
 
     if analyze_btn and url.strip():
@@ -310,24 +326,43 @@ def page_youtube():
             return
 
         metadata = get_video_metadata(url.strip())
+        transcript = None
+        lang = "manual"
 
-        with st.status("Analysing video...", expanded=True) as status:
-            st.write("📥 Fetching transcript...")
-            try:
-                transcript, lang = get_transcript(video_id)
-            except ValueError as e:
-                st.error(str(e))
-                return
+        # Use manual transcript if provided
+        if manual_transcript and manual_transcript.strip():
+            transcript = manual_transcript.strip()
+            lang = "manual"
+            st.info(f"📋 Using manually pasted transcript ({len(transcript.split()):,} words)")
+        else:
+            # Try auto-fetch
+            with st.status("Fetching transcript...", expanded=True) as status:
+                st.write("📥 Fetching transcript automatically...")
+                try:
+                    transcript, lang = get_transcript(video_id)
+                    st.write(f"✅ Transcript fetched ({len(transcript.split()):,} words, language: {lang})")
+                    status.update(label="Transcript fetched!", state="complete")
+                except ValueError as e:
+                    status.update(label="Auto-fetch failed", state="error")
+                    st.error(str(e))
+                    st.warning(
+                        "⬆️ **Use the 'Paste transcript manually' section above** — "
+                        "open the video on YouTube, click '...' → 'Show transcript', "
+                        "copy the text, and paste it there."
+                    )
+                    return
 
-            st.write(f"✅ Transcript fetched ({len(transcript.split()):,} words, language: {lang})")
-            st.write("🤖 Sending to Gemini for analysis...")
+        if not transcript:
+            st.error("No transcript available. Please paste it manually.")
+            return
 
+        with st.status("🤖 Analysing with Gemini...", expanded=True) as status:
+            st.write("Sending to Gemini for analysis...")
             try:
                 analysis = analyze_content(transcript, st.session_state.api_key)
             except Exception as e:
                 st.error(f"Gemini analysis failed: {e}")
                 return
-
             st.write("✅ Analysis complete!")
             status.update(label="Analysis complete!", state="complete")
 
@@ -340,7 +375,7 @@ def page_youtube():
             "video_id": video_id,
             "thumbnail": metadata.get("thumbnail", ""),
             "date_added": datetime.now().isoformat(),
-            "raw_text": transcript[:5000],   # Store first 5K chars for search
+            "raw_text": transcript[:5000],
             "analysis": analysis,
             "language": lang,
         }
